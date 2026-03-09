@@ -3,8 +3,6 @@
 \name{run_koala}
 \alias{run_koala}
 \title{Australian Kidney Only ALlocation Algorithm (KOALA)}
-
-
 \usage{
 run_koala(
   waitlist,
@@ -36,8 +34,6 @@ run_koala(
   spk_bonus = 2
 )
 }
-
-
 \arguments{
 \item{waitlist}{A dataframe/tibble with one row per patient, and columns for each patient characteristic:
 \describe{
@@ -80,7 +76,7 @@ run_koala(
 \describe{
 \item{patient_id}{Unique identifier for each waitlisted patient}
 \item{donor_id}{Unique identifier for each donor}
-\item{hla_mismatch}{HLA mismatch score (ABDRDQ score) for this patient-donor pair. Calculated as: sqrt(1 x A_mismatches + 1.5 x B_mismatches + 3 x DR_mismtaches + 3 x DQ_mismatches)}
+\item{hla_mismatch}{HLA mismatch score (ABDRDQ score) for this patient-donor pair. Calculated as: sqrt(1 * A_mismatches + 1.5 * B_mismatches + 3 * DR_mismtaches + 3 * DQ_mismatches)}
 \item{unacceptable_antigens}{Presence of any donor HLA antigens that would be unnaceptable for this patient. 0 or 1}
 }}
 
@@ -119,11 +115,11 @@ run_koala(
 
 \item{kidney_after_other_organ_bonus}{Bonus points for patients who needed a multi-organ transplant including a kidney, but accepted a transplant without a kidney. See urgent/priority bonus points below for details.}
 
-\item{shipping_threshold_base}{Default shipping threshold (i.e. points required to justify interstate shipping when net debt is 0).}
+\item{shipping_threshold_base}{The default shipping threshold (i.e. points required to justify interstate shipping when net debt is 0). See Shipping threshold below for details.}
 
-\item{shipping_threshold_max}{Maximum possible shipping threshold.}
+\item{shipping_threshold_max}{Maximum possible shipping threshold. See Shipping threshold below for details.}
 
-\item{state_payback_rate}{The amount the threshold increases for every extra kidney the patient's state owes the donor's state.}
+\item{state_payback_rate}{The amount the threshold increases for every extra kidney the patient's state owes the donor's state. See Shipping threshold below for details.}
 
 \item{samestate_bonus}{Bonus points given to patients in the same state as the donor. Avoids shipping for marginal gain by ensuring kidneys are only shipped interstate to patients who have an allocation score at least this much higher than the next same-state patient.}
 
@@ -137,8 +133,6 @@ run_koala(
 
 \item{spk_bonus}{Bonus points given to kidney-only patients who also need a pancreas. See Simultaneous pancreas-kidney (SPK) rules below for details.}
 }
-
-
 \value{
 A dataframe/tibble with one row per waitlisted patient per donor.
 For each donor, the waitlisted patients are ranked according to KOALA, with columns for their total score and individual score components.
@@ -147,8 +141,6 @@ All waitlisted patients are included in the ouptut, regardless of compatibility.
 \description{
 Function to apply the Australian deceased donor kidney allocation algorithm. run_koala() requires four input datasets.
 }
-
-
 \details{
 \strong{HLA-age scaling}\cr
 HLA-age scaling multiplier = ((max - min) * exp(-(age / mid)^slope) + min).\cr
@@ -165,26 +157,25 @@ Prognosis matching points = max * ((epts^2 - 101 * epts - 100 * abs(epts - kdpi)
 Only one priority bonus can be applied, to each patient (the maximum of national_urgent_bonus, state_urgent_bonus, prior_donor_bonus, and kidney_after_other_organ_bonus).
 
 \strong{Shipping threshold}\cr
-Kidneys are first allocated to the 'national' waitlist, which includes:\cr
+Kidneys are first allocated to the 'national' waitlist, which includes:
 \itemize{
 \item patients in the same state as the donor,
 \item interstate patients with a pre-shipping score (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus) >= the shipping threshold.\cr
-Threshold = base - state_payback_rate * net_debt)\cr
-Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.
-\item Then kidneys are allocated on 'interstate utilisation' to all remaining patients
+Threshold = base - state_payback_rate * net_debt).\cr
+Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.\cr
 }
+
+Then kidneys are allocated on 'interstate utilisation' to all remaining patients
 
 \strong{Simultaneous pancreas-kidney (SPK) rules}\cr
 \itemize{
 \item If the donor has a pancreas and only one kidney, then kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
 If any of these patients also need a pancreas, they are given bonus points (SPK bonus), but only if they accept the pancreas along with the kidney.
-\item Then, one kidney is offered together with the pancreas to the SPK list.
-\item And finally, any remaining kidneys are offered to all remaining kidney-only patients.
-}
+\item Then, one kidney is offered to the SPK list.
+\item And finally, any remaining kidneys are offered to all remaining kidney-only patients.\cr
 This function assumes that any kidney offered together with the pancreas to the SPK list will be accepted, so all kidney-only patients with pre-spk points below the threshold will have one less kidney available for allocation.
 }
-
-
+}
 \examples{
 # Load example datasets
 data(waitlist_example)

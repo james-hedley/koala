@@ -47,7 +47,7 @@
 #'   \describe{
 #'     \item{patient_id}{Unique identifier for each waitlisted patient}
 #'     \item{donor_id}{Unique identifier for each donor}
-#'     \item{hla_mismatch}{HLA mismatch score (ABDRDQ score) for this patient-donor pair. Calculated as: sqrt(1 x A_mismatches + 1.5 x B_mismatches + 3 x DR_mismtaches + 3 x DQ_mismatches)}
+#'     \item{hla_mismatch}{HLA mismatch score (ABDRDQ score) for this patient-donor pair. Calculated as: sqrt(1 * A_mismatches + 1.5 * B_mismatches + 3 * DR_mismtaches + 3 * DQ_mismatches)}
 #'     \item{unacceptable_antigens}{Presence of any donor HLA antigens that would be unnaceptable for this patient. 0 or 1}
 #'   }
 #'
@@ -76,9 +76,9 @@
 #' @param prior_donor_bonus Bonus points for patients who have previously donated a kidney. See urgent/priority bonus points below for details.
 #' @param kidney_after_other_organ_bonus Bonus points for patients who needed a multi-organ transplant including a kidney, but accepted a transplant without a kidney. See urgent/priority bonus points below for details.
 #'
-#' @param shipping_threshold_base The default shipping threshold (i.e. points required to justify interstate shipping when net debt is 0). See Shipping threshold below for details. 
+#' @param shipping_threshold_base The default shipping threshold (i.e. points required to justify interstate shipping when net debt is 0). See Shipping threshold below for details.
 #' @param shipping_threshold_max Maximum possible shipping threshold. See Shipping threshold below for details.
-#' @param state_payback_rate  The amount the threshold increases for every extra kidney the patient's state owes the donor's state. See Shipping threshold below for details. 
+#' @param state_payback_rate  The amount the threshold increases for every extra kidney the patient's state owes the donor's state. See Shipping threshold below for details.
 #'
 #' @param samestate_bonus Bonus points given to patients in the same state as the donor. Avoids shipping for marginal gain by ensuring kidneys are only shipped interstate to patients who have an allocation score at least this much higher than the next same-state patient.
 #'
@@ -96,10 +96,10 @@
 #'
 #' \strong{PRA bonus}\cr
 #' Bonus points given to patients based on their sensitisation:\cr
-#' PRA bonus = base * (pra/100) + (max - base) x decay^(100-pra).
+#' PRA bonus = base * (pra/100) + (max - base) * decay^(100-pra).
 #'
 #' \strong{Prognosis matching}\cr
-#' Prognosis matching points = max x ((epts^2 - 101 * epts - 100 * abs(epts - kdpi) + 10000)/9900)
+#' Prognosis matching points = max * ((epts^2 - 101 * epts - 100 * abs(epts - kdpi) + 10000)/9900)
 #'
 #' \strong{Urgent/priority bonuses}\cr
 #' Only one priority bonus can be applied, to each patient (the maximum of national_urgent_bonus, state_urgent_bonus, prior_donor_bonus, and kidney_after_other_organ_bonus).
