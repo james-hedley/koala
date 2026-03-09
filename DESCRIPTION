@@ -5,6 +5,7 @@ Authors@R: c(
     person("James", "Hedley", email = "james.hedley@sydney.edu.au", role = c("aut", "cre")),
     person("Phil", "Clayton", email = "phil@anzdata.org.au", role = "aut"),
     person("Ryan", "Gately", email = "ryan.gately@health.qld.gov.au", role = "aut"),
+    person("Matt", "Sypek", email = "matthew.sypek@mh.org.au", role = "ctb"),
     person("Sarah", "White", email = "sarah@tsanz.com.au", role = "ctb"),
     person("Kate", "Wyburn", email = "kate.wyburn@sydney.edu.au", role = "ctb"))
 Description: Function to run the Australian deceased donor kidney allocation algorithm (KOALA) on a given waitlist, for a given donor (or multiple donors).
