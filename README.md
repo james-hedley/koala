@@ -50,3 +50,11 @@ ranked_list
 ```
 This creates a dataset with one row per waitlisted patient, per donor. For each donor, the patients are ranked according to KOALA.
 
+## Citation
+If you use `koala` in your work, please cite it as:
+
+Hedley J, Clayton P, Gately R, White S, Wyburn K (2026). *KOALA: Kidney Only ALlocation Algorithm*. R package version 0.0.0.9000. [https://github.com/james-hedley/koala](https://github.com/james-hedley/koala)
+
+You can also get the recommended citation in R:
+```r
+citation("koala")
