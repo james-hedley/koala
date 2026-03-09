@@ -90,6 +90,10 @@
 #' @param spk_bonus Bonus points given to kidney-only patients who also need a pancreas. See Simultaneous pancreas-kidney (SPK) rules below for details.
 #'
 #' @details
+#' Technical specifications of the new algorithm are available here:\cr
+#' \href{https://tsanz.com.au/storage/Advisory_Committees_and_Working_Groups/New-Allocation-Algorithm-Summary-for-Website.pdf#page=19}{KOALA technical specifications}.
+#'
+#'
 #' \strong{HLA-age scaling}\cr
 #' HLA-age scaling multiplier = ((max - min) * exp(-(age / mid)^slope) + min).\cr
 #' HLA-matching points are multiplied by this age-scaling multiplier, to reflect that HLA-matching is more important for younger patients, and less important (but still important) for older patients.
