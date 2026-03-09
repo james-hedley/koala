@@ -1,0 +1,57 @@
+utils::globalVariables(c(
+  # Patient-level
+  "patient_id",
+  "patient_state",
+  "patient_age",
+  "patient_bloodgroup",
+  "patient_waityears",
+  "patient_pra",
+  "patient_epts",
+  "patient_hla_mismatch_mean",
+  "patient_hla_mismatch_sd",
+  "patient_national_urgent",
+  "patient_state_urgent",
+  "patient_prior_donor",
+  "patient_kidney_after_other_organ",
+  "patient_spk",
+
+  # Donor-level
+  "donor_id",
+  "donor_state",
+  "donor_bloodgroup",
+  "donor_pancreas",
+  "donor_kidneys",
+  "donor_seq",
+  "hla_mismatch",
+
+  # Computed columns / intermediate
+  "hla_adjust_raw",
+  "hla_age_scaling",
+  "hla_adjust",
+  "adjusted_kdpi",
+  "samestate",
+  "waityears_points",
+  "hla_match_points",
+  "pra_bonus_points",
+  "prognosis_match_points",
+  "urgent_priority_points",
+  "pre_shipping_points",
+  "shipping_threshold",
+  "samestate_points",
+  "pre_spk_points",
+  "spk_points",
+  "kidneys_available",
+  "bloodgroup_identical",
+  "bloodgroup_compatible",
+  "bloodgroup_priority",
+  "interstate_utilisation",
+  "shipping_priority",
+  "tiebreaker_points",
+
+  # Output / allocation
+  "points",
+  "rank",
+  "kidney_offer",
+  "net_debt",
+  "unacceptable_antigens"
+))

@@ -1,0 +1,20 @@
+Package: koala
+Title: KOALA (Kidney Only ALlocation Algorithm) - R functions for working with the Australian deceased donor kidney allocation
+Version: 0.0.0.9000
+Authors@R: c(
+    person("James", "Hedley", email = "james.hedley@sydney.edu.au", role = c("aut", "cre")),
+    person("Phil", "Clayton", email = "phil@anzdata.org.au", role = "aut"),
+    person("Ryan", "Gately", email = "ryan.gately@health.qld.gov.au", role = "aut"),
+    person("Sarah", "White", email = "sarah@tsanz.com.au", role = "ctb"),
+    person("Kate", "Wyburn", email = "kate.wyburn@sydney.edu.au", role = "ctb"))
+Description: Function to run the Australian deceased donor kidney allocation algorithm (KOALA) on a given waitlist, for a given donor (or multiple donors).
+License: GPL-3
+Depends: R (>= 3.5)
+Imports: 
+    dplyr,
+    tidyr (>= 1.3.0),
+    stats
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

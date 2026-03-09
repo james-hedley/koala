@@ -1,0 +1,16 @@
+citHeader("To cite the KOALA package:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "KOALA: Kidney Only Allocation Algorithm",
+  author = c(
+    person("James", "Hedley"),
+    person("Phil", "Clayton"),
+    person("Ryan", "Gately"),
+    person("Sarah", "White"),
+    person("Kate", "Wyburn")
+  ),
+  year = "2026",
+  note = "R package version 0.0.0.9000",
+  url = "https://github.com/james-hedley/koala"
+)
