@@ -220,7 +220,7 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
       pre_spk_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_priority_points + samestate_points,
       kidneys_available = case_when(
         donor_pancreas == 0 ~ donor_kidneys,
-        pre_spk_points >= spk_threshold ~ donor_kidneys,
+        pre_spk_points >= pmax(0, spk_threshold ~ donor_kidneys),
         TRUE ~ donor_kidneys - 1
       ),
       spk_points = if_else(donor_pancreas == 1 & patient_spk == 1 & pre_spk_points >= spk_threshold, spk_bonus, 0),
@@ -237,7 +237,7 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
     mutate(rank = row_number()) %>%
     ungroup() %>%
     mutate(kidney_offer = if_else(rank <= kidneys_available & unacceptable_antigens == 0 & bloodgroup_compatible == 1, 1, 0)) %>%
-    select(donor_seq, donor_id, donor_state, donor_bloodgroup,
+    select(donor_seq, donor_id, donor_state, donor_bloodgroup, donor_pancreas,
            rank, kidney_offer, patient_id, patient_state, patient_bloodgroup, unacceptable_antigens,
            points,
            urgent_priority_points,
