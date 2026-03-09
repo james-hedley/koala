@@ -32,7 +32,7 @@ remotes::install_github("james-hedley/koala")
 
 For full details on the required inputs, see the function documentation: `?run_koala`
 
-To rank patients on the waitling list donor, run:
+To rank patients on the waitling list for each donor, run:
 ``` r
 data(waitlist_example)
 data(donor_example)
