@@ -12,6 +12,7 @@ man/*.Rd~      # temporary Rd files
 NAMESPACE~     # backup NAMESPACE
 data/*.rda     # if you want to ignore large datasets, optional
 data/*.RData   # optional
+data-raw 
 
 # OS-specific
 .DS_Store
