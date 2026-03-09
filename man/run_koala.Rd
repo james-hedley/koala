@@ -3,6 +3,8 @@
 \name{run_koala}
 \alias{run_koala}
 \title{Australian Kidney Only ALlocation Algorithm (KOALA)}
+
+
 \usage{
 run_koala(
   waitlist,
@@ -34,6 +36,8 @@ run_koala(
   spk_bonus = 2
 )
 }
+
+
 \arguments{
 \item{waitlist}{A dataframe/tibble with one row per patient, and columns for each patient characteristic:
 \describe{
@@ -133,6 +137,8 @@ run_koala(
 
 \item{spk_bonus}{Bonus points given to kidney-only patients who also need a pancreas. See Simultaneous pancreas-kidney (SPK) rules below for details.}
 }
+
+
 \value{
 A dataframe/tibble with one row per waitlisted patient per donor.
 For each donor, the waitlisted patients are ranked according to KOALA, with columns for their total score and individual score components.
@@ -141,38 +147,43 @@ All waitlisted patients are included in the ouptut, regardless of compatibility.
 \description{
 Function to apply the Australian deceased donor kidney allocation algorithm. run_koala() requires four input datasets.
 }
+
+
 \details{
-\strong{HLA-age scaling}
-HLA-age scaling multiplier = ((max - min) x exp(-(age / mid)^slope) + min).
+\strong{HLA-age scaling}\cr
+HLA-age scaling multiplier = ((max - min) x exp(-(age / mid)^slope) + min).\cr
 HLA-matching points are multiplied by this age-scaling multiplier, to reflect that HLA-matching is more important for younger patients, and less important (but still important) for older patients.
 
-\strong{PRA bonus}
-Bonus points given to patients based on their sensitisation: PRA bonus = base x (pra/100) + (max - base) x decay^(100-pra).
+\strong{PRA bonus}\cr
+Bonus points given to patients based on their sensitisation:\cr
+PRA bonus = base x (pra/100) + (max - base) x decay^(100-pra).
 
-\strong{Prognosis matching}
+\strong{Prognosis matching}\cr
 Prognosis matching points = max x ((epts^2 - 101 x epts - 100 x abs(epts - kdpi) + 10000)/9900)
 
-\strong{Urgent/priority bonuses}
+\strong{Urgent/priority bonuses}\cr
 Only one priority bonus can be applied, to each patient (the maximum of national_urgent_bonus, state_urgent_bonus, prior_donor_bonus, and kidney_after_other_organ_bonus).
 
-\strong{Shipping threshold}
+\strong{Shipping threshold}\cr
 Kidneys are first allocated to the 'national' waitlist, which includes:
 \itemize{
 \item patients in the same state as the donor,
-\item interstate patients with a pre-shipping score (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus) >= the shipping threshold.
+\item interstate patients with a pre-shipping score (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus) >= the shipping threshold.\cr
 Threshold = base - state_payback_rate x net_debt). Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.
-Then kidneys are allocated on 'interstate utilisation' to all remaining patients
+\item Then kidneys are allocated on 'interstate utilisation' to all remaining patients
 }
 
-\strong{Simultaneous pancreas-kidney (SPK) rules}
+\strong{Simultaneous pancreas-kidney (SPK) rules}\cr
 \itemize{
 \item If the donor has a pancreas and only one kidney, then kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
 If any of these patients also need a pancreas, they are given bonus points (SPK bonus), but only if they accept the pancreas along with the kidney.
-\item Then one kidney is offered to the SPK list.
-\item And finally any remaining kidneys are offered to all remaining kidney-only patients.
-This function assumes that kidneys offered together with the pancreas to the SPK list will be accepted, so all kidney-only patients with pre-spk points below the threshold will have one less kidney available for allocation.
+\item Then, one kidney is offered together with the pancreas to the SPK list.
+\item And finally, any remaining kidneys are offered to all remaining kidney-only patients.
 }
+This function assumes that any kidney offered together with the pancreas to the SPK list will be accepted, so all kidney-only patients with pre-spk points below the threshold will have one less kidney available for allocation.
 }
+
+
 \examples{
 # Load example datasets
 data(waitlist_example)
