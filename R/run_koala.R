@@ -76,9 +76,9 @@
 #' @param prior_donor_bonus Bonus points for patients who have previously donated a kidney. See urgent/priority bonus points below for details.
 #' @param kidney_after_other_organ_bonus Bonus points for patients who needed a multi-organ transplant including a kidney, but accepted a transplant without a kidney. See urgent/priority bonus points below for details.
 #'
-#' @param shipping_threshold_base Interstate shipping is allowed if pre-shipping score (Waiting time, HLA match, PRA bonus, prognosis match, Urgent/priority bonus) >= the shipping threshold. Base is the default threshold (i.e. points required to justify interstate shipping when net debt is 0)
-#' @param shipping_threshold_max Shipping threshold parameterisation min(max, (base - state_payback_rate x net_debt)). Interstate shipping is allowed if pre-shipping score (Waiting time, HLA match, PRA bonus, prognosis match, Urgent/priority bonus) >= the shipping threshold. Max is the maximum possible threshold.
-#' @param state_payback_rate Shipping threshold parameterisation min(max, (base - state_payback_rate x net_debt)). Interstate shipping is allowed if pre-shipping score (Waiting time, HLA match, PRA bonus, prognosis match, Urgent/priority bonus) >= the shipping threshold. State payback rate is the amount the threshold increases for every extra kidney the patient's state owes the donor's state.
+#' @param shipping_threshold_base The default shipping threshold (i.e. points required to justify interstate shipping when net debt is 0). See Shipping threshold below for details. 
+#' @param shipping_threshold_max Maximum possible shipping threshold. See Shipping threshold below for details.
+#' @param state_payback_rate  The amount the threshold increases for every extra kidney the patient's state owes the donor's state. See Shipping threshold below for details. 
 #'
 #' @param samestate_bonus Bonus points given to patients in the same state as the donor. Avoids shipping for marginal gain by ensuring kidneys are only shipped interstate to patients who have an allocation score at least this much higher than the next same-state patient.
 #'
@@ -90,32 +90,35 @@
 #' @param spk_bonus Bonus points given to kidney-only patients who also need a pancreas. See Simultaneous pancreas-kidney (SPK) rules below for details.
 #'
 #' @details
-#' \strong{HLA-age scaling}
-#' HLA-age scaling multiplier = ((max - min) x exp(-(age / mid)^slope) + min).
+#' \strong{HLA-age scaling}\cr
+#' HLA-age scaling multiplier = ((max - min) * exp(-(age / mid)^slope) + min).\cr
 #' HLA-matching points are multiplied by this age-scaling multiplier, to reflect that HLA-matching is more important for younger patients, and less important (but still important) for older patients.
 #'
-#' \strong{PRA bonus}
-#' Bonus points given to patients based on their sensitisation: PRA bonus = base x (pra/100) + (max - base) x decay^(100-pra).
+#' \strong{PRA bonus}\cr
+#' Bonus points given to patients based on their sensitisation:\cr
+#' PRA bonus = base * (pra/100) + (max - base) x decay^(100-pra).
 #'
-#' \strong{Prognosis matching}
-#' Prognosis matching points = max x ((epts^2 - 101 x epts - 100 x abs(epts - kdpi) + 10000)/9900)
+#' \strong{Prognosis matching}\cr
+#' Prognosis matching points = max x ((epts^2 - 101 * epts - 100 * abs(epts - kdpi) + 10000)/9900)
 #'
-#' \strong{Urgent/priority bonuses}
+#' \strong{Urgent/priority bonuses}\cr
 #' Only one priority bonus can be applied, to each patient (the maximum of national_urgent_bonus, state_urgent_bonus, prior_donor_bonus, and kidney_after_other_organ_bonus).
 #'
-#' \strong{Shipping threshold}
+#' \strong{Shipping threshold}\cr
 #' Kidneys are first allocated to the 'national' waitlist, which includes:
 #' - patients in the same state as the donor,
-#' - interstate patients with a pre-shipping score (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus) >= the shipping threshold.
-#' Threshold = base - state_payback_rate x net_debt). Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.
+#' - interstate patients with a pre-shipping score (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus) >= the shipping threshold.\cr
+#' Threshold = base - state_payback_rate * net_debt).\cr
+#' Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.\cr
+#'
 #' Then kidneys are allocated on 'interstate utilisation' to all remaining patients
 #'
-#' \strong{Simultaneous pancreas-kidney (SPK) rules}
+#' \strong{Simultaneous pancreas-kidney (SPK) rules}\cr
 #' - If the donor has a pancreas and only one kidney, then kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
 #'    If any of these patients also need a pancreas, they are given bonus points (SPK bonus), but only if they accept the pancreas along with the kidney.
-#' - Then one kidney is offered to the SPK list.
-#' - And finally any remaining kidneys are offered to all remaining kidney-only patients.
-#' This function assumes that kidneys offered together with the pancreas to the SPK list will be accepted, so all kidney-only patients with pre-spk points below the threshold will have one less kidney available for allocation.
+#' - Then, one kidney is offered to the SPK list.
+#' - And finally, any remaining kidneys are offered to all remaining kidney-only patients.\cr
+#' This function assumes that any kidney offered together with the pancreas to the SPK list will be accepted, so all kidney-only patients with pre-spk points below the threshold will have one less kidney available for allocation.
 #'
 #' @return A dataframe/tibble with one row per waitlisted patient per donor.
 #' For each donor, the waitlisted patients are ranked according to KOALA, with columns for their total score and individual score components.
