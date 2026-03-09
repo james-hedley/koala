@@ -119,11 +119,11 @@ run_koala(
 
 \item{kidney_after_other_organ_bonus}{Bonus points for patients who needed a multi-organ transplant including a kidney, but accepted a transplant without a kidney. See urgent/priority bonus points below for details.}
 
-\item{shipping_threshold_base}{Interstate shipping is allowed if pre-shipping score (Waiting time, HLA match, PRA bonus, prognosis match, Urgent/priority bonus) >= the shipping threshold. Base is the default threshold (i.e. points required to justify interstate shipping when net debt is 0)}
+\item{shipping_threshold_base}{Default shipping threshold (i.e. points required to justify interstate shipping when net debt is 0).}
 
-\item{shipping_threshold_max}{Shipping threshold parameterisation min(max, (base - state_payback_rate x net_debt)). Interstate shipping is allowed if pre-shipping score (Waiting time, HLA match, PRA bonus, prognosis match, Urgent/priority bonus) >= the shipping threshold. Max is the maximum possible threshold.}
+\item{shipping_threshold_max}{Maximum possible shipping threshold.}
 
-\item{state_payback_rate}{Shipping threshold parameterisation min(max, (base - state_payback_rate x net_debt)). Interstate shipping is allowed if pre-shipping score (Waiting time, HLA match, PRA bonus, prognosis match, Urgent/priority bonus) >= the shipping threshold. State payback rate is the amount the threshold increases for every extra kidney the patient's state owes the donor's state.}
+\item{state_payback_rate}{The amount the threshold increases for every extra kidney the patient's state owes the donor's state.}
 
 \item{samestate_bonus}{Bonus points given to patients in the same state as the donor. Avoids shipping for marginal gain by ensuring kidneys are only shipped interstate to patients who have an allocation score at least this much higher than the next same-state patient.}
 
@@ -151,25 +151,26 @@ Function to apply the Australian deceased donor kidney allocation algorithm. run
 
 \details{
 \strong{HLA-age scaling}\cr
-HLA-age scaling multiplier = ((max - min) x exp(-(age / mid)^slope) + min).\cr
+HLA-age scaling multiplier = ((max - min) * exp(-(age / mid)^slope) + min).\cr
 HLA-matching points are multiplied by this age-scaling multiplier, to reflect that HLA-matching is more important for younger patients, and less important (but still important) for older patients.
 
 \strong{PRA bonus}\cr
 Bonus points given to patients based on their sensitisation:\cr
-PRA bonus = base x (pra/100) + (max - base) x decay^(100-pra).
+PRA bonus = base * (pra/100) + (max - base) * decay^(100-pra).
 
 \strong{Prognosis matching}\cr
-Prognosis matching points = max x ((epts^2 - 101 x epts - 100 x abs(epts - kdpi) + 10000)/9900)
+Prognosis matching points = max * ((epts^2 - 101 * epts - 100 * abs(epts - kdpi) + 10000)/9900)
 
 \strong{Urgent/priority bonuses}\cr
 Only one priority bonus can be applied, to each patient (the maximum of national_urgent_bonus, state_urgent_bonus, prior_donor_bonus, and kidney_after_other_organ_bonus).
 
 \strong{Shipping threshold}\cr
-Kidneys are first allocated to the 'national' waitlist, which includes:
+Kidneys are first allocated to the 'national' waitlist, which includes:\cr
 \itemize{
 \item patients in the same state as the donor,
 \item interstate patients with a pre-shipping score (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus) >= the shipping threshold.\cr
-Threshold = base - state_payback_rate x net_debt). Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.
+Threshold = base - state_payback_rate * net_debt)\cr
+Capped at 'max'. 'net_debt' is the net number of kidneys owed from the patient's state to the donor's state.
 \item Then kidneys are allocated on 'interstate utilisation' to all remaining patients
 }
 
