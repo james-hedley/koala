@@ -118,7 +118,7 @@
 #' Then kidneys are allocated on 'interstate utilisation' to all remaining patients
 #'
 #' \strong{Simultaneous pancreas-kidney (SPK) rules}\cr
-#' - If the donor has a pancreas and only one kidney, then kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
+#' - If the donor has a pancreas, then all kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
 #'    If any of these patients also need a pancreas, they are given bonus points (SPK bonus), but only if they accept the pancreas along with the kidney.
 #' - Then, one kidney is offered to the SPK list.
 #' - And finally, any remaining kidneys are offered to all remaining kidney-only patients.\cr

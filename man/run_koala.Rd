@@ -142,6 +142,9 @@ All waitlisted patients are included in the ouptut, regardless of compatibility.
 Function to apply the Australian deceased donor kidney allocation algorithm. run_koala() requires four input datasets.
 }
 \details{
+Technical specifications of the new algorithm are available here:\cr
+\href{https://tsanz.com.au/storage/Advisory_Committees_and_Working_Groups/New-Allocation-Algorithm-Summary-for-Website.pdf#page=19}{KOALA technical specifications}.
+
 \strong{HLA-age scaling}\cr
 HLA-age scaling multiplier = ((max - min) * exp(-(age / mid)^slope) + min).\cr
 HLA-matching points are multiplied by this age-scaling multiplier, to reflect that HLA-matching is more important for younger patients, and less important (but still important) for older patients.
@@ -169,7 +172,7 @@ Then kidneys are allocated on 'interstate utilisation' to all remaining patients
 
 \strong{Simultaneous pancreas-kidney (SPK) rules}\cr
 \itemize{
-\item If the donor has a pancreas and only one kidney, then kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
+\item If the donor has a pancreas, then all kidneys are first allocated to kidney-only patients with pre-SPK points (waiting time, HLA match, PRA bonus, prognosis match, urgent/priority bonus, same-state bonus) >= the SPK threshold.
 If any of these patients also need a pancreas, they are given bonus points (SPK bonus), but only if they accept the pancreas along with the kidney.
 \item Then, one kidney is offered to the SPK list.
 \item And finally, any remaining kidneys are offered to all remaining kidney-only patients.\cr
