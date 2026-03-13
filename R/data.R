@@ -60,11 +60,10 @@
 
 #' Example state_debts dataset
 #'
-#' @format A tibble with 25 rows and 3 columns:
+#' @format A tibble with 5 rows and 2 columns:
 #'   \describe{
-#'     \item{from_state}{State that owes kidneys. Option are NSW, VIC, QLD, SA, WA}
-#'     \item{to_state}{State that is owed kidneys. Option are NSW, VIC, QLD, SA, WA}
-#'     \item{net_debt}{Net number of kidneys owed. Integer, can be negative. Must by symmetric, e.g. if NSW -> VIC net debt is +2, then VIC -> NSW net debt must be -2. if from_state = to_state then net_debt must be 0.}
+#'     \item{state}{State. Options are NSW, VIC, QLD, SA, WA}
+#'     \item{net_debt}{Net number of kidneys owed. Integer, can be negative.}
 #'   }
 #' @source Simulated data
 "state_debts_example"

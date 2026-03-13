@@ -51,11 +51,10 @@
 #'     \item{unacceptable_antigens}{Presence of any donor HLA antigens that would be unnaceptable for this patient. 0 or 1}
 #'   }
 #'
-#' @param state_debts A dataframe/tibble with 25 rows, one for each ordered pair of the 5 Australian transplant jurisdictions (NSW/ACT, VIC/TAS, QLD, WA, SA/NT).
+#' @param state_debts A dataframe/tibble with 5 rows, one for each Australian transplant jurisdiction (NSW/ACT, VIC/TAS, QLD, WA, SA/NT).
 #'   \describe{
-#'     \item{from_state}{State that owes kidneys. Option are NSW, VIC, QLD, SA, WA}
-#'     \item{to_state}{State that is owed kidneys. Option are NSW, VIC, QLD, SA, WA}
-#'     \item{net_debt}{Net number of kidneys owed. Integer, can be negative. Must by symmetric, e.g. if NSW -> VIC net debt is +2, then VIC -> NSW net debt must be -2. if from_state = to_state then net_debt must be 0.}
+#'     \item{state}{State that owes kidneys. Options are NSW, VIC, QLD, SA, WA}
+#'     \item{net_debt}{Net number of kidneys owed. Integer, can be negative.}
 #'   }
 #'
 #' @param hla_age_scaling_max Maximum HLA points multiplier (applied to youngest patients). See HLA-age scaling below for details.
@@ -172,7 +171,8 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
   ranked_list <- waitlist %>%
     crossing(donors %>% mutate(donor_seq = row_number())) %>%
     left_join(crossmatch) %>%
-    left_join(state_debts, by = join_by("donor_state" == "from_state", "patient_state" == "to_state")) %>%
+    left_join(state_debts %>% mutate(patient_state_debt = net_debt), by = join_by("patient_state" == "state")) %>%
+    left_join(state_debts %>% mutate(donor_state_debt = net_debt), by = join_by("donor_state" == "state")) %>%
     mutate(
       waityears_points = patient_waityears,
       hla_adjust_raw = (patient_hla_mismatch_mean - hla_mismatch) / patient_hla_mismatch_sd,
@@ -196,7 +196,8 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
         if_else(patient_kidney_after_other_organ == 1, kidney_after_other_organ_bonus, 0)
       ),
       pre_shipping_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_priority_points,
-      shipping_threshold = pmin(shipping_threshold_max, shipping_threshold_base - state_payback_rate * net_debt),
+      net_debt_to_patient_state = donor_state_debt - patient_state_debt,
+      shipping_threshold = pmin(shipping_threshold_max, shipping_threshold_base - state_payback_rate * net_debt_to_patient_state),
       shipping_priority = case_when(
         samestate == 1 ~ 1,
         pre_shipping_points >= shipping_threshold ~ 1,
@@ -251,7 +252,7 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
            prognosis_match_points,
            samestate_points,
            spk_points,
-           net_debt, pre_shipping_points, shipping_threshold, interstate_utilisation,
+           net_debt_to_patient_state, pre_shipping_points, shipping_threshold, interstate_utilisation,
            everything())
 
   return(ranked_list)

@@ -80,11 +80,10 @@ run_koala(
 \item{unacceptable_antigens}{Presence of any donor HLA antigens that would be unnaceptable for this patient. 0 or 1}
 }}
 
-\item{state_debts}{A dataframe/tibble with 25 rows, one for each ordered pair of the 5 Australian transplant jurisdictions (NSW/ACT, VIC/TAS, QLD, WA, SA/NT).
+\item{state_debts}{A dataframe/tibble with 5 rows, one for each Australian transplant jurisdiction (NSW/ACT, VIC/TAS, QLD, WA, SA/NT).
 \describe{
-\item{from_state}{State that owes kidneys. Option are NSW, VIC, QLD, SA, WA}
-\item{to_state}{State that is owed kidneys. Option are NSW, VIC, QLD, SA, WA}
-\item{net_debt}{Net number of kidneys owed. Integer, can be negative. Must by symmetric, e.g. if NSW -> VIC net debt is +2, then VIC -> NSW net debt must be -2. if from_state = to_state then net_debt must be 0.}
+\item{state}{State that owes kidneys. Options are NSW, VIC, QLD, SA, WA}
+\item{net_debt}{Net number of kidneys owed. Integer, can be negative.}
 }}
 
 \item{hla_age_scaling_max}{Maximum HLA points multiplier (applied to youngest patients). See HLA-age scaling below for details.}
