@@ -175,17 +175,17 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
                       spk_kidney_only_threshold = 15,
                       spk_bonus = 2) {
 
-  # Can either provide individual datasets: wailist, donors, crossmatch
+  # Can either provide individual datasets: waitlist, donors, crossmatch
   # Or can provide a combined dataset: matches
-  if(is.null(wailist) & is.null(donors) & is.null(crossmatch) & is.null(matches)) {
+  if(is.null(waitlist) & is.null(donors) & is.null(crossmatch) & is.null(matches)) {
     stop("Must provide either individual datasets: 'waitlist', 'donors', 'crossmatch.' Or provide an already combined dataset: 'matches'")
   }
 
-  if(!is.null(matches) & (!is.null(wailist) | !is.null(donors) | !is.null(crossmatch))) {
+  if(!is.null(matches) & (!is.null(waitlist) | !is.null(donors) | !is.null(crossmatch))) {
     stop("Combined dataset 'matches' was provided. Do not provide any individual datasets: 'waitlist', 'donors', or 'crossmatch'")
   }
 
-  if(is.null(matches) & (is.null(wailist) | is.null(donors) | is.null(crossmatch))) {
+  if(is.null(matches) & (is.null(waitlist) | is.null(donors) | is.null(crossmatch))) {
     stop("All individual datasets must be provided: 'waitlist', 'donors', and 'crossmatch'")
   }
 
