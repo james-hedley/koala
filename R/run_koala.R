@@ -213,7 +213,7 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
     matches <- matches |> left_join(donor_seq_lookup)
   }
 
-  ranked_list <- matches
+  ranked_list <- matches |>
   # Add state debts
   left_join(state_debts, by = join_by("donor_state" == "from_state", "patient_state" == "to_state")) %>%
     # Calculate score components
