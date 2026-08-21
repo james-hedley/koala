@@ -57,6 +57,8 @@
 #'     \item{net_debt}{Net number of kidneys owed. Integer, can be negative.}
 #'   }
 #'
+#' @param matches A dataframe/tibble with all combinations of donors and waitlisted patients, and their crossmatching. Can be provided instead of individual datasets: 'waitlist', 'donors', and 'crossmatch'
+#'
 #' @param hla_age_scaling_max Maximum HLA points multiplier (applied to youngest patients). See HLA-age scaling below for details.
 #' @param hla_age_scaling_min Minimum HLA points multiplier (applied to oldest patients). See HLA-age scaling below for details.
 #' @param hla_age_scaling_mid Mid-point (inflection point) of age-scaling multiplier. See HLA-age scaling below for details.
@@ -85,7 +87,7 @@
 #' @param bldgrp_o_b_threshold O donors to B patients are allowed if pre-bloodgroup points (HLA match, PRA bonus, prognosis match) >= this threshold.
 #' @param bldgrp_compatibile_threshold All ABO compatible transplants are allowed if pre-bloodgroup points (HLA match, PRA bonus, prognosis match) >= this threshold.
 #'
-#' @param spk_threshold Points threshold for kidney-only patients to be prioritised above pancreas/SPK patients. See Simultaneous pancreas-kidney (SPK) rules below for details.
+#' @param spk_kidney_only_threshold Points threshold for kidney-only patients to be prioritised above pancreas/SPK patients. See Simultaneous pancreas-kidney (SPK) rules below for details.
 #' @param spk_bonus Bonus points given to kidney-only patients who also need a pancreas. See Simultaneous pancreas-kidney (SPK) rules below for details.
 #'
 #' @details
@@ -143,67 +145,111 @@
 #' )
 #'
 #' @export
-run_koala <- function(waitlist, donors, crossmatch, state_debts,
+run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches = NULL, state_debts = NULL,
+                      #
                       hla_age_scaling_max = 4.5,
                       hla_age_scaling_min = 0.5,
                       hla_age_scaling_mid = 45,
                       hla_age_scaling_slope = 2.2,
+                      #
                       pra_bonus_base = 1,
                       pra_max = 30,
                       pra_decay = 0.8,
-                      paediatric_kdpi_max = 20,
-                      living_donor_kdpi = 20,
+                      #
                       prognosis_match_max = 3,
+                      #
                       national_urgent_bonus = 15,
                       state_urgent_bonus = 12,
                       prior_donor_bonus = 10,
                       kidney_after_other_organ_bonus = 12,
+                      #
                       shipping_threshold_base = 12,
                       shipping_threshold_max = 15,
                       state_payback_rate = 0.5,
                       samestate_bonus = 1,
+                      #
                       bldgrp_a_ab_threshold = 5,
                       bldgrp_o_b_threshold = 12,
                       bldgrp_compatibile_threshold = 18,
-                      spk_threshold = 15,
+                      #
+                      spk_kidney_only_threshold = 15,
                       spk_bonus = 2) {
 
-  ranked_list <- waitlist %>%
-    crossing(donors %>% mutate(donor_seq = row_number())) %>%
-    left_join(crossmatch) %>%
-    left_join(state_debts %>% mutate(patient_state_debt = net_debt), by = join_by("patient_state" == "state")) %>%
-    left_join(state_debts %>% mutate(donor_state_debt = net_debt), by = join_by("donor_state" == "state")) %>%
+  # Can either provide individual datasets: wailist, donors, crossmatch
+  # Or can provide a combined dataset: matches
+  if(is.null(wailist) & is.null(donors) & is.null(crossmatch) & is.null(matches)) {
+    stop("Must provide either individual datasets: 'waitlist', 'donors', 'crossmatch.' Or provide an already combined dataset: 'matches'")
+  }
+
+  if(!is.null(matches) & (!is.null(wailist) | !is.null(donors) | !is.null(crossmatch))) {
+    stop("Combined dataset 'matches' was provided. Do not provide any individual datasets: 'waitlist', 'donors', or 'crossmatch'")
+  }
+
+  if(is.null(matches) & (is.null(wailist) | is.null(donors) | is.null(crossmatch))) {
+    stop("All individual datasets must be provided: 'waitlist', 'donors', and 'crossmatch'")
+  }
+
+
+  # If state debts not provided, assume 0
+  if(is.null(state_debts)) {
+    state_debts <- tibble(from_state = rep(c("NSW", "VIC", "QLD", "SA", "WA"), times = 5),
+                          to_state =  rep(c("NSW", "VIC", "QLD", "SA", "WA"), each = 5)) %>%
+      mutate(net_debt = 0)
+  }
+
+
+  # Determine combined matches dataset
+  if(is.null(matches)) {
+    matches <- waitlist %>%
+      # Add donors
+      cross_join(donors %>% mutate(donor_seq = row_number())) %>%
+      # Add donor-patient cross-match
+      left_join(crossmatch)
+  } else {
+    donor_seq_lookup <- matches |>
+      distinct(donor_id) |>
+      mutate(donor_seq = row_number())
+
+    matches <- matches |> left_join(donor_seq_lookup)
+  }
+
+  ranked_list <- matches
+  # Add state debts
+  left_join(state_debts, by = join_by("donor_state" == "from_state", "patient_state" == "to_state")) %>%
+    # Calculate score components
     mutate(
+      # Waiting time
       waityears_points = patient_waityears,
+      # HLA mismatch score
       hla_adjust_raw = (patient_hla_mismatch_mean - hla_mismatch) / patient_hla_mismatch_sd,
-      hla_age_scaling = (hla_age_scaling_max - hla_age_scaling_min) *
-        exp(-(patient_age / hla_age_scaling_mid)^hla_age_scaling_slope) + hla_age_scaling_min,
+      hla_age_scaling = (hla_age_scaling_max - hla_age_scaling_min) * exp(-(patient_age / hla_age_scaling_mid)^hla_age_scaling_slope) + hla_age_scaling_min,
       hla_adjust = hla_adjust_raw * hla_age_scaling,
       hla_match_points = hla_adjust,
+      # PRA
       pra_bonus_points = pra_bonus_base*(patient_pra/100) + (pra_max - pra_bonus_base) * pra_decay^(100-patient_pra),
-      adjusted_kdpi = case_when(
-        donor_living == 1 ~ living_donor_kdpi,
-        donor_age < 18 ~ pmin(donor_kdpi, paediatric_kdpi_max),
-        TRUE ~ donor_kdpi
-      ),
+      # Prognosis match
+      adjusted_kdpi = if_else(donor_age < 18, pmin(donor_kdpi, 20), donor_kdpi),
       prognosis_match_points = prognosis_match_max * ((patient_epts^2 - 101*patient_epts - 100*abs(patient_epts - adjusted_kdpi) + 10000)/9900),
+      # Same-state bonus
       samestate = if_else(patient_state == donor_state, 1, 0),
       samestate_points = if_else(patient_state == donor_state, samestate_bonus, 0),
-      urgent_priority_points = pmax(
+      # Urgent and prior living donor bonus
+      urgent_points = pmax(
         if_else(patient_national_urgent == 1, national_urgent_bonus, 0),
         if_else(patient_state_urgent == 1 & samestate == 1, state_urgent_bonus, 0),
         if_else(patient_prior_donor == 1, prior_donor_bonus, 0),
         if_else(patient_kidney_after_other_organ == 1, kidney_after_other_organ_bonus, 0)
       ),
-      pre_shipping_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_priority_points,
-      net_debt_to_patient_state = donor_state_debt - patient_state_debt,
-      shipping_threshold = pmin(shipping_threshold_max, shipping_threshold_base - state_payback_rate * net_debt_to_patient_state),
+      # Shipping threshold
+      pre_shipping_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_points,
+      shipping_threshold = pmin(shipping_threshold_max, shipping_threshold_base - state_payback_rate * net_debt),
       shipping_priority = case_when(
         samestate == 1 ~ 1,
         pre_shipping_points >= shipping_threshold ~ 1,
-        TRUE ~ 0
-      ),
+        TRUE ~ 0),
+      # Flag interstate utilisation
       interstate_utilisation = if_else(samestate == 0 & pre_shipping_points < min(shipping_threshold), 1, 0),
+      # Blood group restrictions
       bloodgroup_identical = if_else(patient_bloodgroup == donor_bloodgroup, 1, 0),
       bloodgroup_compatible = case_when(
         patient_bloodgroup == donor_bloodgroup ~ 1,
@@ -211,8 +257,7 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
         patient_bloodgroup == "A" & donor_bloodgroup %in% c("O", "A") ~ 1,
         patient_bloodgroup == "B" & donor_bloodgroup %in% c("O", "B") ~ 1,
         patient_bloodgroup == "O" & donor_bloodgroup %in% c("O") ~ 1,
-        TRUE ~ 0
-      ),
+        TRUE ~ 0),
       pre_bloodgroup_points = hla_match_points + pra_bonus_points + prognosis_match_points,
       bloodgroup_priority = case_when(
         bloodgroup_identical == 1 ~ 1,
@@ -220,39 +265,50 @@ run_koala <- function(waitlist, donors, crossmatch, state_debts,
         donor_bloodgroup == "A" & patient_bloodgroup == "AB" & pre_bloodgroup_points >= bldgrp_a_ab_threshold ~ 1,
         donor_bloodgroup == "O" & patient_bloodgroup == "B" & pre_bloodgroup_points >= bldgrp_o_b_threshold ~ 1,
         bloodgroup_compatible == 1 & pre_bloodgroup_points >= bldgrp_compatibile_threshold ~ 1,
-        TRUE ~ 0
-      ),
-      pre_spk_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_priority_points + samestate_points,
+        TRUE ~ 0),
+      # SPK rules
+      pre_spk_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_points + samestate_points,
       kidneys_available = case_when(
         donor_pancreas == 0 ~ donor_kidneys,
-        pre_spk_points >= spk_threshold ~ donor_kidneys,
-        TRUE ~ pmax(0, donor_kidneys - 1)
+        donor_kidneys == 1 & max(pre_spk_points) >= spk_kidney_only_threshold ~ 1,
+        donor_kidneys == 2 & sort(pre_spk_points, decreasing = TRUE)[2] >= spk_kidney_only_threshold ~ 2,
+        TRUE ~ donor_kidneys - 1,
       ),
-      spk_points = if_else(donor_pancreas == 1 & patient_spk == 1 & pre_spk_points >= spk_threshold, spk_bonus, 0),
+      spk_points = if_else(donor_pancreas == 1 & patient_spk == 1, spk_bonus, 0),
+      # Tie-breaker
       tiebreaker_points = runif(n()),
-      points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_priority_points + samestate_points + spk_points
+      # Final score
+      points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_points + samestate_points + spk_points
     ) %>%
+    # Final ranking
     arrange(donor_seq,
+            # Compatible donor
             unacceptable_antigens, desc(bloodgroup_priority), desc(bloodgroup_compatible),
+            # Shippable donor
             desc(shipping_priority),
+            # Allocation score
             desc(points),
-            desc(urgent_priority_points), desc(samestate), desc(bloodgroup_identical), desc(waityears_points),
+            # Tie-breakers
+            desc(urgent_points), desc(samestate), desc(bloodgroup_identical), desc(waityears_points),
             desc(hla_match_points), desc(pra_bonus_points), desc(prognosis_match_points), desc(tiebreaker_points)) %>%
     group_by(donor_seq) %>%
     mutate(rank = row_number()) %>%
     ungroup() %>%
+    # Determine which ranks got an offer (assume 100% offer conversion)
     mutate(kidney_offer = if_else(rank <= kidneys_available & unacceptable_antigens == 0 & bloodgroup_compatible == 1, 1, 0)) %>%
-    select(donor_seq, donor_id, donor_state, donor_bloodgroup, donor_pancreas,
+    # Show only the relevant variables
+    select(donor_seq, donor_id, donor_state, donor_bloodgroup,
            rank, kidney_offer, patient_id, patient_state, patient_bloodgroup, unacceptable_antigens,
            points,
-           urgent_priority_points,
+           urgent_points,
            waityears_points,
            hla_match_points,
            pra_bonus_points,
            prognosis_match_points,
-           samestate_points,
+           urgent_points,
+           samestate_bonus,
            spk_points,
-           net_debt_to_patient_state, pre_shipping_points, shipping_threshold, interstate_utilisation,
+           net_debt, pre_shipping_points, shipping_threshold, interstate_utilisation,
            everything())
 
   return(ranked_list)
