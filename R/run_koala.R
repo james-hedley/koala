@@ -222,7 +222,7 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
       waityears_points = patient_waityears,
       # HLA mismatch score
       hla_adjust_raw = (patient_hla_mismatch_mean - hla_mismatch) / patient_hla_mismatch_sd,
-      hla_age_scaling = (hla_age_scaling_max - hla_age_scaling_min) * exp(-(patient_age / hla_age_scaling_mid)^hla_age_scaling_slope) + hla_age_scaling_min,
+      hla_age_scaling = (hla_age_scaling_max - hla_age_scaling_min) * exp(-(round(patient_age, digits = 2) / hla_age_scaling_mid)^hla_age_scaling_slope) + hla_age_scaling_min,
       hla_adjust = hla_adjust_raw * hla_age_scaling,
       hla_match_points = hla_adjust,
       # PRA
