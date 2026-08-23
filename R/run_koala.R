@@ -197,6 +197,8 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
       mutate(net_debt = 0)
   }
 
+  # Calculate state net debts
+  state_net_debts <- get_state_net_debts(state_debts)
 
   # Determine combined matches dataset
   if(is.null(matches)) {
@@ -204,18 +206,18 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
       # Add donors
       cross_join(donors %>% mutate(donor_seq = row_number())) %>%
       # Add donor-patient cross-match
-      left_join(crossmatch)
+      left_join(crossmatch, by = join_by(donor_id, patient_id))
   } else {
     donor_seq_lookup <- matches |>
       distinct(donor_id) |>
       mutate(donor_seq = row_number())
 
-    matches <- matches |> left_join(donor_seq_lookup)
+    matches <- matches |> left_join(donor_seq_lookup, by = join_by(donor_id))
   }
 
   ranked_list <- matches |>
-  # Add state debts
-  left_join(state_debts, by = join_by("donor_state" == "from_state", "patient_state" == "to_state")) %>%
+    # Add state debts
+    left_join(state_net_debts, by = join_by("donor_state" == "from_state", "patient_state" == "to_state")) %>%
     # Calculate score components
     mutate(
       # Waiting time
@@ -306,10 +308,11 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
            pra_bonus_points,
            prognosis_match_points,
            urgent_points,
-           samestate_bonus,
+           samestate_points,
            spk_points,
            net_debt, pre_shipping_points, shipping_threshold, interstate_utilisation,
            everything())
 
   return(ranked_list)
 }
+
