@@ -5,10 +5,11 @@
 \title{Australian Kidney Only ALlocation Algorithm (KOALA)}
 \usage{
 run_koala(
-  waitlist,
-  donors,
-  crossmatch,
-  state_debts,
+  waitlist = NULL,
+  donors = NULL,
+  crossmatch = NULL,
+  matches = NULL,
+  state_debts = NULL,
   hla_age_scaling_max = 4.5,
   hla_age_scaling_min = 0.5,
   hla_age_scaling_mid = 45,
@@ -16,8 +17,6 @@ run_koala(
   pra_bonus_base = 1,
   pra_max = 30,
   pra_decay = 0.8,
-  paediatric_kdpi_max = 20,
-  living_donor_kdpi = 20,
   prognosis_match_max = 3,
   national_urgent_bonus = 15,
   state_urgent_bonus = 12,
@@ -30,7 +29,7 @@ run_koala(
   bldgrp_a_ab_threshold = 5,
   bldgrp_o_b_threshold = 12,
   bldgrp_compatibile_threshold = 18,
-  spk_threshold = 15,
+  spk_kidney_only_threshold = 15,
   spk_bonus = 2
 )
 }
@@ -80,6 +79,8 @@ run_koala(
 \item{unacceptable_antigens}{Presence of any donor HLA antigens that would be unnaceptable for this patient. 0 or 1}
 }}
 
+\item{matches}{A dataframe/tibble with all combinations of donors and waitlisted patients, and their crossmatching. Can be provided instead of individual datasets: 'waitlist', 'donors', and 'crossmatch'}
+
 \item{state_debts}{A dataframe/tibble with 5 rows, one for each Australian transplant jurisdiction (NSW/ACT, VIC/TAS, QLD, WA, SA/NT).
 \describe{
 \item{state}{State that owes kidneys. Options are NSW, VIC, QLD, SA, WA}
@@ -99,10 +100,6 @@ run_koala(
 \item{pra_max}{Maximum PRA bonus applied to someone with PRA 100.}
 
 \item{pra_decay}{Exponential rate of change (decay) in the PRA bonus}
-
-\item{paediatric_kdpi_max}{If donor is padeiatric (<18 years old), then their KDPI is capped at this maximum for prognosis matching.}
-
-\item{living_donor_kdpi}{If donor is a living donor (altruistic or end of kidney exchange chain), then assume this is their KDPI for prognosis matching.}
 
 \item{prognosis_match_max}{Maximum prognosis matching points possible.}
 
@@ -128,9 +125,13 @@ run_koala(
 
 \item{bldgrp_compatibile_threshold}{All ABO compatible transplants are allowed if pre-bloodgroup points (HLA match, PRA bonus, prognosis match) >= this threshold.}
 
-\item{spk_threshold}{Points threshold for kidney-only patients to be prioritised above pancreas/SPK patients. See Simultaneous pancreas-kidney (SPK) rules below for details.}
+\item{spk_kidney_only_threshold}{Points threshold for kidney-only patients to be prioritised above pancreas/SPK patients. See Simultaneous pancreas-kidney (SPK) rules below for details.}
 
 \item{spk_bonus}{Bonus points given to kidney-only patients who also need a pancreas. See Simultaneous pancreas-kidney (SPK) rules below for details.}
+
+\item{living_donor_kdpi}{If donor is a living donor (altruistic or end of kidney exchange chain), then assume this is their KDPI for prognosis matching.}
+
+\item{paediatric_kdpi_max}{If donor is padeiatric (<18 years old), then their KDPI is capped at this maximum for prognosis matching.}
 }
 \value{
 A dataframe/tibble with one row per waitlisted patient per donor.

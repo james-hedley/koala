@@ -8,7 +8,7 @@
 A tibble with 5 rows and 2 columns:
 \describe{
 \item{state}{State. Options are NSW, VIC, QLD, SA, WA}
-\item{net_debt}{Net number of kidneys owed. Integer, can be negative.}
+\item{debt}{Net number of kidneys owed. Integer, can be negative.}
 }
 }
 \source{

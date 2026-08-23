@@ -1,4 +1,4 @@
-#' @importFrom dplyr %>% arrange case_when if_else left_join mutate row_number select everything group_by ungroup join_by desc n
+#' @importFrom dplyr %>% arrange case_when if_else left_join cross_join mutate row_number select everything group_by ungroup join_by desc n
 #' @importFrom tidyr crossing
 #' @importFrom stats runif
 #'
@@ -137,7 +137,7 @@
 #' data(state_debts_example)
 #'
 #' # Generate a ranked list using KOALA
-#'ranked_list <- run_koala(
+#' ranked_list <- run_koala(
 #' waitlist = waitlist_example,
 #' donors = donor_example,
 #' crossmatch = crossmatch_example,

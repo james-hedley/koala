@@ -1,4 +1,4 @@
-#' @importFrom dplyr %>% tibble left_join mutate join_by
+#' @importFrom dplyr %>% tibble left_join mutate join_by rename select
 #'
 #' @name get_state_net_debts
 #' @title Get state net debts
@@ -8,12 +8,14 @@
 #'   \describe{
 #'     \item{state}{OrganMatch lab state: NSW, VIC, QLD, SA, or WA}
 #'     \item{debt}{Number of kidneys that state owes to the national pool. A positive debt means that state owes kidneys, a negative means that state is owed kidneys.}
+#'   }
 #'
 #' @return A dataframe/tibble with 20 rows, one for each state paired with each other state (including itself), and 3 columns:
 #'  \describe{
 #'     \item{from_state}{The state kidneys are coming from: NSW, VIC, QLD, SA, or WA}
 #'     \item{to_state}{The state kidneys are going to: NSW, VIC, QLD, SA, or WA}
-#'     \item{net_debt}{The net number of kidneys the from_state owes to the to_state. Positive means the from_state owes kidneys, negative means the from_state is owed kidneys. If from_state is same as to_state, then net_debt is always 0.
+#'     \item{net_debt}{The net number of kidneys the from_state owes to the to_state. Positive means the from_state owes kidneys, negative means the from_state is owed kidneys. If from_state is same as to_state, then net_debt is always 0.}
+#'  }
 #'
 #' @examples
 #' state_debts <- sim_state_debts(min_debt = -6, max_debt = 6) # Simulate state debts from a uniform distribution, ensuring sum of debts across all states is zero.
