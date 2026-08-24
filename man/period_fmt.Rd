@@ -19,7 +19,9 @@ value. Default \code{1}.}
 \value{
 A character vector the same length as \code{period}, giving each value
 formatted as \code{"<number> <unit>"} (e.g. \code{"2.9 days"}), with the unit
-singularised when the rounded value is 1 (e.g. \code{"1 month"}).
+singularised only when \code{digits = 0} and the rounded value is exactly 1
+(e.g. \code{"1 month"}). At non-zero \code{digits}, the plural is always used
+(e.g. \code{"1.0 years"}), since a decimal value reads more naturally as plural.
 }
 \description{
 Converts a numeric period (e.g. a decimal number of years) into a
@@ -35,5 +37,11 @@ period_fmt(0.008, unit = "years")
 
 period_fmt(c(0.09, 27.65, 1.2), unit = "months", digits = 0)
 # "3 days"  "2 years" "1 month"
+
+period_fmt(1, unit = "years", digits = 1)
+# "1.0 years"
+
+period_fmt(1, unit = "years", digits = 0)
+# "1 year"
 
 }
