@@ -279,7 +279,7 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
     # Final ranking
     arrange(donor_seq,
             # Compatible donor
-            unacceptable_antigens, desc(bloodgroup_priority), desc(bloodgroup_compatible),
+            unacceptable_antigens, desc(bloodgroup_compatible), desc(bloodgroup_priority),
             # Shippable donor
             desc(shipping_priority),
             # Allocation score
