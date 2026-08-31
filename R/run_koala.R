@@ -292,8 +292,9 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
     ungroup() %>%
     # Determine where SPK allocation started
     group_by(donor_seq) |>
-    mutate(spk_list_start = if_else(donor_pancreas == 1,
-                                    as.integer(row_number() == max(which(pre_spk_points >= spk_kidney_only_threshold))),
+    mutate(spk_list_start = if_else(donor_pancreas == 1 &
+                                      cumsum(pre_spk_points >= spk_kidney_only_threshold) == sum(pre_spk_points >= spk_kidney_only_threshold),
+                                    1,
                                     0)) |>
     ungroup() |>
     # Determine which ranks got an offer (assume 100% offer conversion)
