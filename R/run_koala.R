@@ -270,13 +270,7 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
         TRUE ~ 0),
       # SPK rules
       pre_spk_points = waityears_points + hla_match_points + pra_bonus_points + prognosis_match_points + urgent_points + samestate_points,
-      kidneys_available = case_when(
-        donor_pancreas == 0 ~ donor_kidneys,
-        donor_kidneys == 1 & max(pre_spk_points) >= spk_kidney_only_threshold ~ 1,
-        donor_kidneys == 2 & sort(pre_spk_points, decreasing = TRUE)[2] >= spk_kidney_only_threshold ~ 2,
-        TRUE ~ donor_kidneys - 1,
-      ),
-      spk_points = if_else(donor_pancreas == 1 & patient_spk == 1, spk_bonus, 0),
+      spk_points = if_else(donor_pancreas == 1 & patient_spk == 1 & pre_spk_points >= spk_kidney_only_threshold, spk_bonus, 0),
       # Tie-breaker
       tiebreaker_points = runif(n()),
       # Final score
@@ -296,8 +290,20 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
     group_by(donor_seq) %>%
     mutate(rank = row_number()) %>%
     ungroup() %>%
+    # Determine where SPK allocation started
+    group_by(donor_seq) |>
+    mutate(spk_list_start = if_else(donor_pancreas == 1,
+                                    as.integer(row_number() == max(which(pre_spk_points >= spk_kidney_only_threshold))),
+                                    0)) |>
+    ungroup() |>
     # Determine which ranks got an offer (assume 100% offer conversion)
-    mutate(kidney_offer = if_else(rank <= kidneys_available & unacceptable_antigens == 0 & bloodgroup_compatible == 1, 1, 0)) %>%
+    group_by(donor_seq) |>
+    mutate(kidney_offer = case_when(
+      unacceptable_antigens == 1 | bloodgroup_compatible == 0 ~ 0,
+      cumsum(spk_list_start) == 0 & rank <= donor_kidneys ~ 1,
+      cumsum(spk_list_start) == 1 & rank <= donor_kidneys - 1 ~ 1,
+      TRUE ~ 0)) |>
+    ungroup() |>
     # Show only the relevant variables
     select(donor_seq, donor_id, donor_state, donor_bloodgroup,
            rank, kidney_offer, patient_id, patient_state, patient_bloodgroup, unacceptable_antigens,
