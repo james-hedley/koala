@@ -293,21 +293,27 @@ run_koala <- function(waitlist = NULL, donors = NULL, crossmatch = NULL, matches
     # Determine where SPK allocation started
     group_by(donor_seq) |>
     mutate(spk_list_start = if_else(donor_pancreas == 1 &
-                                      cumsum(pre_spk_points >= spk_kidney_only_threshold) == sum(pre_spk_points >= spk_kidney_only_threshold),
+                                      unacceptable_antigens == 0 &
+                                      bloodgroup_compatible == 1 &
+                                      pre_spk_points < spk_kidney_only_threshold &
+                                      cumsum(unacceptable_antigens == 0 &
+                                               bloodgroup_compatible == 1 &
+                                               pre_spk_points < spk_kidney_only_threshold) == 1,
                                     1,
                                     0)) |>
+    mutate(after_spk = pmin(cumsum(spk_list_start), 1)) |>
     ungroup() |>
     # Determine which ranks got an offer (assume 100% offer conversion)
     group_by(donor_seq) |>
     mutate(kidney_offer = case_when(
       unacceptable_antigens == 1 | bloodgroup_compatible == 0 ~ 0,
-      cumsum(spk_list_start) == 0 & rank <= donor_kidneys ~ 1,
-      cumsum(spk_list_start) == 1 & rank <= donor_kidneys - 1 ~ 1,
+      after_spk == 0 & rank <= donor_kidneys ~ 1,
+      after_spk == 1 & rank <= donor_kidneys - 1 ~ 1,
       TRUE ~ 0)) |>
     ungroup() |>
     # Show only the relevant variables
     select(donor_seq, donor_id, donor_state, donor_bloodgroup,
-           rank, kidney_offer, patient_id, patient_state, patient_bloodgroup, unacceptable_antigens,
+           rank, after_spk, kidney_offer, patient_id, patient_state, patient_bloodgroup, unacceptable_antigens,
            points,
            urgent_points,
            waityears_points,
